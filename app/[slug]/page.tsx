@@ -125,6 +125,7 @@ export default function LeadPage() {
 
   const openWhatsApp = () => {
     if (!cliente) return;
+    if (isUploading) return;
     const url = buildWhatsAppUrl(
       cliente.telefonoWhatsApp,
       cliente.nomeAzienda,
@@ -322,7 +323,7 @@ export default function LeadPage() {
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40 rounded-2xl z-10">
                     <Loader2 className="w-6 h-6 text-white animate-spin" />
                     <span className="text-xs font-medium text-white">
-                      Caricamento link...
+                      Upload...
                     </span>
                   </div>
                 )}
@@ -462,7 +463,7 @@ export default function LeadPage() {
             whileTap={isUploading ? undefined : { scale: 0.97 }}
             className={`w-full py-4 rounded-2xl font-semibold text-lg shadow-lg flex items-center justify-center gap-2 transition-all ${
               isUploading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                ? "bg-gray-400 text-gray-200 cursor-not-allowed opacity-90"
                 : "text-white"
             } ${!isUploading && hasFilledForm ? "shadow-green-200/50" : ""}`}
             style={
@@ -479,7 +480,7 @@ export default function LeadPage() {
             {isUploading ? (
               <>
                 <Loader2 className="w-6 h-6 animate-spin" />
-                <span>Attendi caricamento foto...</span>
+                <span>⏳ Caricamento foto in corso...</span>
               </>
             ) : (
               <>
