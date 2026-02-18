@@ -43,7 +43,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ url: json.data.url });
+    const imageUrl =
+      json.data?.url ?? json.data?.display_url ?? json.data?.image?.url ?? "";
+    if (!imageUrl) {
+      return NextResponse.json(
+        { error: "URL immagine non trovato nella risposta ImgBB" },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json({ url: imageUrl });
   } catch (e) {
     return NextResponse.json(
       { error: "Errore durante l'upload" },

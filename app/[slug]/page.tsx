@@ -29,6 +29,7 @@ function buildWhatsAppUrl(
     ? "🔴 URGENTE: Sì"
     : "🟢 URGENTE: No (Standard)";
 
+  const photoLine = photoUrl && photoUrl.trim() ? `\n\n📷 FOTO: ${photoUrl.trim()}` : "";
   const textBody = `Ciao ${nomeAzienda},
 Ho bisogno di un preventivo.
 
@@ -38,8 +39,7 @@ ${problema || "Non specificato"}
 ${urgencyLine}
 
 📍 ZONA:
-${zona || "Non specificata"}
-${photoUrl ? `\n📷 FOTO: ${photoUrl}` : ""}`;
+${zona || "Non specificata"}${photoLine}`;
 
   const cleanPhone = telefono.replace(/[^0-9]/g, "");
   const encodedText = encodeURIComponent(textBody);
@@ -122,16 +122,15 @@ export default function LeadPage() {
     setUploadDone(false);
   };
 
-  const openWhatsApp = () => {
+  const openWhatsApp = (currentPhotoUrl: string | null) => {
     if (!cliente) return;
-    if (isUploading) return;
     const url = buildWhatsAppUrl(
       cliente.telefonoWhatsApp,
       cliente.nomeAzienda,
       problema,
       urgente,
       zona,
-      photoUrl
+      currentPhotoUrl ?? null
     );
     window.open(url, "_blank");
   };
@@ -140,7 +139,7 @@ export default function LeadPage() {
     e.preventDefault();
     if (!cliente) return;
     if (isUploading) return;
-    openWhatsApp();
+    openWhatsApp(photoUrl);
   };
 
   if (!cliente) notFound();
