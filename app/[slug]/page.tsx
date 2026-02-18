@@ -70,7 +70,7 @@ export default function LeadPage() {
 
   const [problema, setProblema] = useState("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [uploadDone, setUploadDone] = useState(false);
   const [urgente, setUrgente] = useState(false);
   const [zona, setZona] = useState("");
@@ -79,7 +79,7 @@ export default function LeadPage() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) return;
-    setUploading(true);
+    setIsUploading(true);
     setUploadDone(false);
     setFotoUrl(null);
     const formData = new FormData();
@@ -95,7 +95,7 @@ export default function LeadPage() {
       setFotoUrl(null);
       console.error(err);
     } finally {
-      setUploading(false);
+      setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -122,6 +122,7 @@ export default function LeadPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!cliente) return;
+    if (isUploading) return;
 
     if (!fotoUrl) {
       setShowNoPhotoConfirm(true);
@@ -285,19 +286,23 @@ export default function LeadPage() {
             accept="image/*"
             onChange={handleFileChange}
             className="hidden"
+            aria-label="Carica foto del guasto"
           />
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full min-h-[140px] rounded-2xl border-2 border-dashed border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/80 active:scale-[0.99] transition-all flex items-center justify-center overflow-hidden relative disabled:opacity-70"
+            disabled={isUploading}
+            className="w-full min-h-[140px] rounded-2xl border-2 border-dashed border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/80 active:scale-[0.99] transition-all flex items-center justify-center overflow-hidden relative disabled:opacity-70 disabled:pointer-events-none"
           >
-            {uploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
+            {isUploading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/95 z-10">
                 <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                <span className="text-sm font-medium text-gray-600">
+                  Caricamento foto in corso...
+                </span>
               </div>
             )}
-            {!uploading && uploadDone && fotoUrl ? (
+            {!isUploading && uploadDone && fotoUrl ? (
               <div className="relative w-full h-full min-h-[140px] group">
                 <img
                   src={fotoUrl}
@@ -434,28 +439,47 @@ export default function LeadPage() {
         <div className="px-4 pb-4 pt-0 pointer-events-auto">
           <motion.button
             type="submit"
-            whileTap={{ scale: 0.97 }}
-            className={`w-full py-4 rounded-2xl font-semibold text-lg shadow-lg flex items-center justify-center gap-2 text-white transition-all ${
-              hasFilledForm
-                ? "shadow-green-200/50"
-                : ""
-            }`}
-            style={{
-              background: hasFilledForm
-                ? "linear-gradient(135deg, #25D366 0%, #20bd5a 50%, #1da851 100%)"
-                : "linear-gradient(135deg, #25D366 0%, #20bd5a 100%)",
-            }}
+            disabled={isUploading}
+            whileTap={isUploading ? undefined : { scale: 0.97 }}
+            className={`w-full py-4 rounded-2xl font-semibold text-lg shadow-lg flex items-center justify-center gap-2 transition-all ${
+              isUploading
+                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                : "text-white"
+            } ${!isUploading && hasFilledForm ? "shadow-green-200/50" : ""}`}
+            style={
+              isUploading
+                ? undefined
+                : {
+                    background:
+                      hasFilledForm
+                        ? "linear-gradient(135deg, #25D366 0%, #20bd5a 50%, #1da851 100%)"
+                        : "linear-gradient(135deg, #25D366 0%, #20bd5a 100%)",
+                  }
+            }
           >
-            {hasFilledForm && (
-              <motion.span
-                animate={{ opacity: [1, 0.7, 1] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              >
-                <MessageCircle className="w-6 h-6" />
-              </motion.span>
+            {isUploading ? (
+              <>
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span>Attendi caricamento foto...</span>
+              </>
+            ) : (
+              <>
+                {hasFilledForm && (
+                  <motion.span
+                    animate={{ opacity: [1, 0.7, 1] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 2,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <MessageCircle className="w-6 h-6" />
+                  </motion.span>
+                )}
+                {!hasFilledForm && <MessageCircle className="w-6 h-6" />}
+                <span>Richiedi Preventivo Gratuito ➜</span>
+              </>
             )}
-            {!hasFilledForm && <MessageCircle className="w-6 h-6" />}
-            <span>Richiedi Preventivo Gratuito ➜</span>
           </motion.button>
         </div>
       </div>
