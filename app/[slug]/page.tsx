@@ -23,7 +23,7 @@ function buildWhatsAppUrl(
   problema: string,
   urgente: boolean,
   zona: string,
-  fotoUrl: string | null
+  photoUrl: string | null
 ): string {
   const urgencyLine = urgente
     ? "🔴 URGENTE: Sì"
@@ -39,7 +39,7 @@ ${urgencyLine}
 
 📍 ZONA:
 ${zona || "Non specificata"}
-${fotoUrl ? `\n📷 FOTO: ${fotoUrl}` : ""}`;
+${photoUrl ? `\n📷 FOTO: ${photoUrl}` : ""}`;
 
   const cleanPhone = telefono.replace(/[^0-9]/g, "");
   const encodedText = encodeURIComponent(textBody);
@@ -69,7 +69,7 @@ export default function LeadPage() {
   const photoSectionRef = useRef<HTMLDivElement>(null);
 
   const [problema, setProblema] = useState("");
-  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadDone, setUploadDone] = useState(false);
@@ -94,18 +94,18 @@ export default function LeadPage() {
     setLocalPreview(objectUrl);
     setIsUploading(true);
     setUploadDone(false);
-    setFotoUrl(null);
+    setPhotoUrl(null);
     const formData = new FormData();
     formData.set("image", file);
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload fallito");
-      setFotoUrl(data.url);
+      setPhotoUrl(data.url);
       setUploadDone(true);
     } catch (err) {
       setUploadDone(false);
-      setFotoUrl(null);
+      setPhotoUrl(null);
       console.error(err);
     } finally {
       setIsUploading(false);
@@ -119,7 +119,7 @@ export default function LeadPage() {
       URL.revokeObjectURL(localPreview);
       setLocalPreview(null);
     }
-    setFotoUrl(null);
+    setPhotoUrl(null);
     setUploadDone(false);
   };
 
@@ -131,7 +131,7 @@ export default function LeadPage() {
       problema,
       urgente,
       zona,
-      fotoUrl
+      photoUrl
     );
     window.open(url, "_blank");
   };
@@ -141,7 +141,7 @@ export default function LeadPage() {
     if (!cliente) return;
     if (isUploading) return;
 
-    if (!fotoUrl) {
+    if (!photoUrl) {
       setShowNoPhotoConfirm(true);
       return;
     }
