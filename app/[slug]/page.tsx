@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import {
   Camera,
@@ -70,15 +70,28 @@ export default function LeadPage() {
 
   const [problema, setProblema] = useState("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadDone, setUploadDone] = useState(false);
   const [urgente, setUrgente] = useState(false);
   const [zona, setZona] = useState("");
   const [showNoPhotoConfirm, setShowNoPhotoConfirm] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      if (localPreview) URL.revokeObjectURL(localPreview);
+    };
+  }, [localPreview]);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) return;
+    if (localPreview) {
+      URL.revokeObjectURL(localPreview);
+      setLocalPreview(null);
+    }
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreview(objectUrl);
     setIsUploading(true);
     setUploadDone(false);
     setFotoUrl(null);
@@ -102,6 +115,10 @@ export default function LeadPage() {
 
   const removePhoto = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (localPreview) {
+      URL.revokeObjectURL(localPreview);
+      setLocalPreview(null);
+    }
     setFotoUrl(null);
     setUploadDone(false);
   };
@@ -294,29 +311,31 @@ export default function LeadPage() {
             disabled={isUploading}
             className="w-full min-h-[140px] rounded-2xl border-2 border-dashed border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/80 active:scale-[0.99] transition-all flex items-center justify-center overflow-hidden relative disabled:opacity-70 disabled:pointer-events-none"
           >
-            {isUploading && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/95 z-10">
-                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-                <span className="text-sm font-medium text-gray-600">
-                  Caricamento foto in corso...
-                </span>
-              </div>
-            )}
-            {!isUploading && uploadDone && fotoUrl ? (
+            {localPreview || photoUrl ? (
               <div className="relative w-full h-full min-h-[140px] group">
                 <img
-                  src={fotoUrl}
+                  src={localPreview || photoUrl || ""}
                   alt="Anteprima"
                   className="w-full h-[140px] object-cover rounded-2xl border-2 border-emerald-400 shadow-inner"
                 />
-                <button
-                  type="button"
-                  onClick={removePhoto}
-                  aria-label="Rimuovi foto"
-                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                {isUploading && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40 rounded-2xl z-10">
+                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    <span className="text-xs font-medium text-white">
+                      Caricamento link...
+                    </span>
+                  </div>
+                )}
+                {!isUploading && (
+                  <button
+                    type="button"
+                    onClick={removePhoto}
+                    aria-label="Rimuovi foto"
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center active:scale-95 transition-transform z-20"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2 py-4">
