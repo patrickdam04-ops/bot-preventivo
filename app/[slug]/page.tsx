@@ -140,12 +140,6 @@ export default function LeadPage() {
     e.preventDefault();
     if (!cliente) return;
     if (isUploading) return;
-
-    if (localPreview && !photoUrl) {
-      alert("⏳ Sto finendo di caricare la foto. Attendi un attimo...");
-      return;
-    }
-
     openWhatsApp();
   };
 
