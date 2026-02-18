@@ -75,6 +75,7 @@ export default function LeadPage() {
   const [uploadDone, setUploadDone] = useState(false);
   const [urgente, setUrgente] = useState(false);
   const [zona, setZona] = useState("");
+  const [showNoPhotoConfirm, setShowNoPhotoConfirm] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -139,7 +140,26 @@ export default function LeadPage() {
     e.preventDefault();
     if (!cliente) return;
     if (isUploading) return;
+
+    if (!localPreview && !photoUrl) {
+      setShowNoPhotoConfirm(true);
+      return;
+    }
+
     openWhatsApp(photoUrl);
+  };
+
+  const handleInviaComunque = () => {
+    setShowNoPhotoConfirm(false);
+    openWhatsApp(null);
+  };
+
+  const handleTornaIndietro = () => {
+    setShowNoPhotoConfirm(false);
+    photoSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
   };
 
   if (!cliente) notFound();
@@ -153,6 +173,50 @@ export default function LeadPage() {
       onSubmit={handleSubmit}
       className="min-h-screen max-w-lg mx-auto bg-[#f8f9fa]"
     >
+      {/* Banner avviso: nessuna foto inserita */}
+      <AnimatePresence>
+        {showNoPhotoConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+            onClick={handleTornaIndietro}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5"
+            >
+              <p className="text-gray-800 text-sm leading-relaxed mb-5">
+                Consiglio dell&apos;esperto: senza una foto del guasto il
+                preventivo potrebbe essere meno preciso e richiedere un
+                sopralluogo. Con una foto possiamo arrivare già pronti.
+                Inviare comunque senza foto?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleTornaIndietro}
+                  className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors"
+                >
+                  Torna indietro
+                </button>
+                <button
+                  type="button"
+                  onClick={handleInviaComunque}
+                  className="flex-1 py-3 rounded-xl bg-[#25D366] text-white font-semibold text-sm hover:bg-[#20bd5a] transition-colors"
+                >
+                  Invia comunque
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* —— Header (Fiducia) —— */}
       <motion.header
         initial={fadeInUp.initial}
